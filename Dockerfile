@@ -1,37 +1,27 @@
-# Use OpenJDK 17 as base image
-FROM openjdk:17-jdk-slim
-
-# Set working directory
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY .mvn/ .mvn/
-COPY mvnw .
+# Cache dependencies first
 COPY pom.xml .
+RUN mvn -B -DskipTests dependency:go-offline
 
-# Copy source code
-COPY src/ src/
+# Copy source and build
+COPY src ./src
+RUN mvn -B -DskipTests clean package
 
-# Make mvnw executable
-RUN chmod +x mvnw
-
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Create a new stage for runtime
-FROM openjdk:17-jre-slim
-
-# Set working directory
+# Runtime stage
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy the built JAR from the build stage
-COPY --from=0 /app/target/smartbin-0.0.1-SNAPSHOT.jar app.jar
+# Copy jar from build stage
+COPY --from=build /app/target/smartbin-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port
 EXPOSE 8080
 
-# Set environment variables
-ENV JAVA_OPTS="-Xmx512m -Xms256m"
+# JVM options (adjust as needed)
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
 
 # Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
