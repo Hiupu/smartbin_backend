@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+README.md
+*.md
+.vscode/
+__pycache__/
+*.ino
+platformio.ini
+frontend/
+templates/
+*.sql

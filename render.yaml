@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: smartbin-backend
+    env: java
+    plan: free
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/smartbin-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smartbin-db
+          property: connectionString
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: smartbin-db
+          property: username
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: smartbin-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USERNAME
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+
+databases:
+  - name: smartbin-db
+    databaseName: smartbin
+    user: smartbin_user
+    plan: free
